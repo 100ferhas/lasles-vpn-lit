@@ -139,6 +139,11 @@ export class LaslesVpn extends LitElement {
         background: #FFF;
         z-index: 1;
 
+        @media screen and (max-width: 468px) {
+          flex-wrap: wrap;
+          gap: 20px;
+        }
+
         @media screen and (min-width: 768px) {
           margin: 20px 100px;
         }
@@ -166,6 +171,10 @@ export class LaslesVpn extends LitElement {
         font-weight: 400;
         line-height: 30px;
         gap: 20px;
+
+        @media screen and (max-width: 468px) {
+          flex-direction: column;
+        }
 
         @media screen and (min-width: 768px) {
           padding: 140px 100px 50px 100px;

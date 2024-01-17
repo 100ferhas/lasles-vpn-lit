@@ -30,6 +30,10 @@ export class Navigation extends LitElement {
         .links {
             display: flex;
             gap: 30px;
+
+            @media screen and (max-width: 468px) {
+                gap: 5px;
+            }
         }
 
         a {
