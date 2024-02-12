@@ -233,7 +233,7 @@ export class LaslesVpn extends LitElement {
       </nav>
 
       <main>
-        <vpn-banner .reverse=${true}>
+        <vpn-banner class='about' .reverse=${true}>
           <span slot='content' class='title-big'>Want anything to be easy with <strong>LaslesVPN</strong></span>
           <span slot='content' class='subtitle'>Provide a network for all your needs with ease and fun using LaslesVPN discover interesting features from us.</span>
           <vpn-button slot='content' shape='square' type='primary'>Get Started</vpn-button>
@@ -242,7 +242,7 @@ export class LaslesVpn extends LitElement {
 
         <vpn-card-group .items=${cardGroupItems}></vpn-card-group>
 
-        <vpn-banner>
+        <vpn-banner class='features'>
           <span slot='content' class='title-small'>We Provide Many Features You Can Use</span>
           <span slot='content' class='subtitle'>You can explore the features that we provide with fun and have their own functions each feature.</span>
           ${checkItems.map(item => html`

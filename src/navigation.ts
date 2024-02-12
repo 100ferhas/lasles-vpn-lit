@@ -1,12 +1,41 @@
+/* eslint-disable wc/guard-super-call */
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
 import './logo.js';
 import './button.js';
 
+interface ILink {
+    text: string,
+    scrollTo: string
+}
+
 @customElement('vpn-navigation')
 export class Navigation extends LitElement {
-    private _links = ['About', 'Features', 'Pricing', 'Testimonials', 'Help'];
+    private _links: ILink[] = [
+        {
+            text: 'About',
+            scrollTo: '.about'
+        },
+        {
+            text: 'Features',
+            scrollTo: '.features'
+        },
+        {
+            text: 'Pricing',
+            scrollTo: '.plans'
+        },
+        {
+            text: 'Testimonials',
+            scrollTo: '.customers'
+        },
+        {
+            text: 'Help',
+            scrollTo: 'footer'
+        },
+    ];
+
+    observers: IntersectionObserver[] = [];
 
     @property({ type: Number })
     activeIndex!: number;
@@ -58,6 +87,36 @@ export class Navigation extends LitElement {
         }
     `;
 
+    connectedCallback(): void {
+        super.connectedCallback();
+
+        this._links.forEach((link: ILink, index: number) => {
+            const observer = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting === true)
+                    this.activeIndex = index;
+            }, { threshold: [0] });
+
+            const element = document.querySelector("lasles-vpn")?.shadowRoot?.querySelector(link.scrollTo);
+
+            if (element) {
+                observer.observe(element);
+                this.observers.push(observer);
+            }
+        });
+    }
+
+    disconnectedCallback(): void {
+        super.disconnectedCallback();
+
+        this.observers.forEach(o => o.disconnect());
+        this.observers = [];
+    }
+
+    private linkClicked(link: ILink, index: number): void {
+        this.activeIndex = index;
+        document.querySelector("lasles-vpn")?.shadowRoot?.querySelector(link.scrollTo)?.scrollIntoView({ behavior: 'smooth' });
+    }
+
     render() {
         return html`
             <div class='navigation'>
@@ -65,7 +124,9 @@ export class Navigation extends LitElement {
 
                 <div class='links link-list'>
                     ${this._links.map((link, index) => html`
-                        <a href='#!' @click=${() => { this.activeIndex = index }} class='${this.activeIndex === index ? 'active' : ''}'>${link}</a>
+                        <a href='#plans' @click=${() => this.linkClicked(link, index)} class='${this.activeIndex === index ? 'active' : ''}'>
+                        ${link.text}
+                    </a>
                     `)}
                 </div>
 
