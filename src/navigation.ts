@@ -144,7 +144,7 @@ export class Navigation extends LitElement {
 
                     <div class='links link-list'>
                         ${this._links.map((link, index) => html`
-                            <a href='#plans' @click=${() => this._linkClicked(link, index)} class='${this.activeIndex === index ? 'active' : ''}'>
+                            <a href='#!' @click=${() => this._linkClicked(link, index)} class='${this.activeIndex === index ? 'active' : ''}'>
                             ${link.text}
                         </a>
                         `)}
