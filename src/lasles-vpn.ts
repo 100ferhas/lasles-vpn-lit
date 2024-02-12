@@ -228,9 +228,7 @@ export class LaslesVpn extends LitElement {
 
   render() {
     return html`
-      <nav>
-        <vpn-navigation .activeIndex=${0}></vpn-navigation>
-      </nav>
+      <vpn-navigation></vpn-navigation>
 
       <main>
         <vpn-banner class='about' .reverse=${true}>

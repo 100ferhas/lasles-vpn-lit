@@ -35,12 +35,22 @@ export class Navigation extends LitElement {
         },
     ];
 
-    observers: IntersectionObserver[] = [];
+    _observers: IntersectionObserver[] = [];
+
+    @property({ attribute: false })
+    _navOpacity: number = 0;
 
     @property({ type: Number })
-    activeIndex!: number;
+    activeIndex: number = 0;
 
     static styles = css`
+        nav {
+            position: fixed;
+            width: 100%;
+            background-color: white;
+            z-index: 99;
+        }
+
         .navigation {
             display: flex;
             align-items: center;
@@ -94,47 +104,58 @@ export class Navigation extends LitElement {
             const observer = new IntersectionObserver((entries) => {
                 if (entries[0].isIntersecting === true)
                     this.activeIndex = index;
-            }, { threshold: [0] });
+            }, { threshold: [0.5] });
 
             const element = document.querySelector("lasles-vpn")?.shadowRoot?.querySelector(link.scrollTo);
 
             if (element) {
                 observer.observe(element);
-                this.observers.push(observer);
+                this._observers.push(observer);
             }
         });
+
+        document.addEventListener("scroll", this._scrollListener);
     }
 
     disconnectedCallback(): void {
         super.disconnectedCallback();
 
-        this.observers.forEach(o => o.disconnect());
-        this.observers = [];
+        this._observers.forEach(o => o.disconnect());
+        this._observers = [];
+
+        document.removeEventListener("scroll", this._scrollListener);
     }
 
-    private linkClicked(link: ILink, index: number): void {
+    private _scrollListener = () => {
+        const opacity = window.scrollY / 10;
+        this._navOpacity = opacity >= 10 ? 10 : opacity;
+    }
+
+    private _linkClicked = (link: ILink, index: number) => {
         this.activeIndex = index;
         document.querySelector("lasles-vpn")?.shadowRoot?.querySelector(link.scrollTo)?.scrollIntoView({ behavior: 'smooth' });
     }
 
     render() {
         return html`
-            <div class='navigation'>
-                <vpn-logo></vpn-logo>
+            <nav style="box-shadow: rgb(0 0 0 / ${this._navOpacity}%) 0px 10px 15px 5px;">
+                <div class='navigation'>
+                    <vpn-logo></vpn-logo>
 
-                <div class='links link-list'>
-                    ${this._links.map((link, index) => html`
-                        <a href='#plans' @click=${() => this.linkClicked(link, index)} class='${this.activeIndex === index ? 'active' : ''}'>
-                        ${link.text}
-                    </a>
-                    `)}
-                </div>
+                    <div class='links link-list'>
+                        ${this._links.map((link, index) => html`
+                            <a href='#plans' @click=${() => this._linkClicked(link, index)} class='${this.activeIndex === index ? 'active' : ''}'>
+                            ${link.text}
+                        </a>
+                        `)}
+                    </div>
 
-                <div class='links'>
-                    <vpn-button>Sign in</vpn-button>
-                    <vpn-button type='primary'>Sign up</vpn-button>
+                    <div class='links'>
+                        <vpn-button>Sign in</vpn-button>
+                        <vpn-button type='primary'>Sign up</vpn-button>
+                    </div>
                 </div>
-            </div>
+            </nav>
         `;
     }
 }
