@@ -35,6 +35,8 @@ export class Navigation extends LitElement {
         },
     ];
 
+    _shadowRoot: ShadowRoot | null | undefined = null;
+
     _observers: IntersectionObserver[] = [];
 
     @property({ attribute: false })
@@ -100,13 +102,16 @@ export class Navigation extends LitElement {
     connectedCallback(): void {
         super.connectedCallback();
 
+        this._shadowRoot = document.querySelector("lasles-vpn")?.shadowRoot;
+
         this._links.forEach((link: ILink, index: number) => {
             const observer = new IntersectionObserver((entries) => {
-                if (entries[0].isIntersecting === true)
+                if (entries[0].isIntersecting === true) {
                     this.activeIndex = index;
+                }
             }, { threshold: [0.5] });
 
-            const element = document.querySelector("lasles-vpn")?.shadowRoot?.querySelector(link.scrollTo);
+            const element = this._shadowRoot?.querySelector(link.scrollTo);
 
             if (element) {
                 observer.observe(element);
@@ -123,6 +128,8 @@ export class Navigation extends LitElement {
         this._observers.forEach(o => o.disconnect());
         this._observers = [];
 
+        this._shadowRoot = null;
+
         document.removeEventListener("scroll", this._scrollListener);
     }
 
@@ -131,9 +138,8 @@ export class Navigation extends LitElement {
         this._navOpacity = opacity >= 10 ? 10 : opacity;
     }
 
-    private _linkClicked = (link: ILink, index: number) => {
-        this.activeIndex = index;
-        document.querySelector("lasles-vpn")?.shadowRoot?.querySelector(link.scrollTo)?.scrollIntoView({ behavior: 'smooth' });
+    private _linkClicked = (link: ILink) => {
+        this._shadowRoot?.querySelector(link.scrollTo)?.scrollIntoView({ behavior: 'smooth' });
     }
 
     render() {
@@ -144,7 +150,7 @@ export class Navigation extends LitElement {
 
                     <div class='links link-list'>
                         ${this._links.map((link, index) => html`
-                            <a href='#!' @click=${() => this._linkClicked(link, index)} class='${this.activeIndex === index ? 'active' : ''}'>
+                            <a href='#!' @click=${() => this._linkClicked(link)} class='${this.activeIndex === index ? 'active' : ''}'>
                             ${link.text}
                         </a>
                         `)}
