@@ -1,3 +1,4 @@
+/* eslint-disable lit/no-classfield-shadowing */
 /* eslint-disable lit-a11y/click-events-have-key-events */
 import { LitElement, css, html } from "lit";
 import { customElement, property } from 'lit/decorators.js';

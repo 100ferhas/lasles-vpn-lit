@@ -29,7 +29,7 @@ const plans = [
 @customElement('plans-card')
 export class PlansCard extends LitElement {
     @property({ type: Number })
-    _selectedIndex = plans.length - 1;
+    accessor _selectedIndex = 1;
 
     static styles = css`
         :host {

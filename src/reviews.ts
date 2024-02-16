@@ -52,14 +52,14 @@ const reviews = [
 
 @customElement('vpn-reviews')
 export class Reviews extends LitElement {
-    @property({ type: Number })
-    _selectedIndex = 0;
+    @property({ attribute: false })
+    accessor _selectedIndex = 0;
 
-    @query('.reviews')
-    _reviewsDiv!: HTMLDivElement;
+    @query('.container')
+    private _containerDiv!: HTMLDivElement;
 
     @property({ attribute: false })
-    _interval?: any;
+    accessor _reviewWidth: number = 434;
 
     static styles = css`
         :host {
@@ -67,23 +67,26 @@ export class Reviews extends LitElement {
         }
 
         .container {
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
-            position: relative;
-            padding: 40px 20px;
+            overflow-x: scroll;
+            scrollbar-width: 0;
+            -ms-overflow-style: none;
+            scroll-behavior: smooth;
+            padding: 30px 20px;
+
+            &::-webkit-scrollbar {
+                display: none;
+            }
 
             @media screen and (min-width: 768px) {
-                padding: 40px 100px;
+                padding: 30px 100px;
             }
 
             @media screen and (min-width: 1280px) {
-                padding: 40px 150px;
+                padding: 30px 150px;
             }
         }
 
         .reviews {
-            position: absolute;
             display: inline-flex;
             justify-content: start;
             align-items: flex-start;
@@ -172,7 +175,18 @@ export class Reviews extends LitElement {
         .controls {
             display: flex;
             justify-content: space-between;
-            margin-top: 380px;
+            padding: 40px 20px;
+            padding-top: 0;
+
+            @media screen and (min-width: 768px) {
+                padding: 40px 100px;
+                padding-top: 0;
+            }
+
+            @media screen and (min-width: 1280px) {
+                padding: 40px 150px;
+                padding-top: 0;
+            }
         }
 
         .selector {
@@ -201,55 +215,46 @@ export class Reviews extends LitElement {
     private _set(value: number) {
         if (value >= 0 && value < reviews.length) {
             this._selectedIndex = value;
-            this._doTranslate();
-            this._restartInterval();
+            this._scrollToElement();
         }
     }
 
     private _change(value: number) {
         if (this._selectedIndex + value >= 0 && this._selectedIndex + value < reviews.length) {
             this._selectedIndex += value;
-            this._doTranslate();
-            this._restartInterval();
+            this._scrollToElement();
         }
     }
 
-    private _doTranslate = () => {
-        const delta = 120;
-        let maxIndex = this._selectedIndex;
+    private _scrollToElement() {
+        this._containerDiv.querySelector(`.review[index="${this._selectedIndex}"]`)
+            ?.scrollIntoView({ inline: 'center', block: 'nearest' });
+    }
 
-        while ((reviews.length - maxIndex + 1) * 434 < (window.innerWidth - delta)) {
-            maxIndex -= 1;
+    private _onScroll = () => {
+        const startScroll = this._containerDiv.scrollLeft <= 10;
+        const endScroll = this._containerDiv.scrollLeft === this._containerDiv.scrollWidth - this._containerDiv.offsetWidth;
+
+        if (startScroll) {
+            this._selectedIndex = 0;
+        } else if (endScroll) {
+            this._selectedIndex = reviews.length - 1;
+        } else {
+            const middle = this.clientWidth / 2;
+            const halfCard = this._reviewWidth / 2;
+            this._selectedIndex = Math.floor((this._containerDiv.scrollLeft + middle - halfCard) / this._reviewWidth);
         }
-        this._reviewsDiv.style.transform = `translateX(${-434 * maxIndex}px)`;
     }
 
-    private _startInterval() {
-        this._interval = setInterval(() => {
-            this._selectedIndex = this._selectedIndex + 1 === reviews.length ? 0 : this._selectedIndex + 1;
-            this._doTranslate();
-        }, 5000)
-    }
-
-    private _clearInterval() {
-        clearInterval(this._interval);
-    }
-
-    private _restartInterval() {
-        this._clearInterval();
-        this._startInterval();
-    }
-
-    connectedCallback() {
+    async connectedCallback() {
         super.connectedCallback();
-        window.addEventListener('resize', this._doTranslate);
-        this._startInterval();
+        await this.updateComplete;
+        this._containerDiv.addEventListener("scrollend", this._onScroll);
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
-        window.removeEventListener('resize', this._doTranslate);
-        this._clearInterval();
+        this._containerDiv.removeEventListener("scrollend", this._onScroll);
     }
 
     render() {
@@ -257,7 +262,7 @@ export class Reviews extends LitElement {
             <div class='container'>
                 <div class='reviews'>
                     ${reviews.map((review, index) => html`
-                        <div class='review ${this._selectedIndex === index ? 'active' : ''}' @click=${() => this._set(index)}>
+                        <div index="${index}" class='review ${this._selectedIndex === index ? 'active' : ''}' @click=${() => this._set(index)}>
                             <div class='header'>
                                 <img class='profile' src=${review.picture} alt='profile' />
                                 <div class='info'>
@@ -276,10 +281,11 @@ export class Reviews extends LitElement {
                         </div>
                     `)}
                 </div>
+            </div>
 
-                <div class='controls'>
+            <div class='controls'>
                     <div class='selector'>
-                        ${reviews.map((review, index) => html`
+                        ${reviews.map((_review, index) => html`
                             <span @click=${() => this._set(index)} class='select ${this._selectedIndex === index ? 'active' : ''}'></span>
                         `)}
                     </div>
@@ -289,7 +295,6 @@ export class Reviews extends LitElement {
                         <vpn-icon-button .disabled=${this._selectedIndex === reviews.length - 1} type='primary' @click=${() => this._change(+1)} .icon=${new URL('../../assets/arrow-forward.svg', import.meta.url)}></vpn-icon-button>
                     </div>
                 </div>
-            </div>
         `;
     }
 }

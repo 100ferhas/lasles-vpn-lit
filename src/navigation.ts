@@ -1,3 +1,4 @@
+/* eslint-disable lit/no-classfield-shadowing */
 /* eslint-disable wc/guard-super-call */
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
@@ -7,36 +8,38 @@ import './button.js';
 
 interface ILink {
     text: string,
-    scrollTo: string
+    sectionSelector: string
 }
+
+const _links: ILink[] = [
+    {
+        text: 'About',
+        sectionSelector: '.about'
+    },
+    {
+        text: 'Features',
+        sectionSelector: '.features'
+    },
+    {
+        text: 'Pricing',
+        sectionSelector: '.plans'
+    },
+    {
+        text: 'Testimonials',
+        sectionSelector: '.customers'
+    },
+    {
+        text: 'Help',
+        sectionSelector: 'footer'
+    },
+];
 
 @customElement('vpn-navigation')
 export class Navigation extends LitElement {
-    private _links: ILink[] = [
-        {
-            text: 'About',
-            scrollTo: '.about'
-        },
-        {
-            text: 'Features',
-            scrollTo: '.features'
-        },
-        {
-            text: 'Pricing',
-            scrollTo: '.plans'
-        },
-        {
-            text: 'Testimonials',
-            scrollTo: '.customers'
-        },
-        {
-            text: 'Help',
-            scrollTo: 'footer'
-        },
-    ];
-
+    @property({ attribute: false })
     _shadowRoot: ShadowRoot | null | undefined = null;
 
+    @property({ attribute: false })
     _observers: IntersectionObserver[] = [];
 
     @property({ attribute: false })
@@ -104,14 +107,14 @@ export class Navigation extends LitElement {
 
         this._shadowRoot = document.querySelector("lasles-vpn")?.shadowRoot;
 
-        this._links.forEach((link: ILink, index: number) => {
+        _links.forEach((link: ILink, index: number) => {
             const observer = new IntersectionObserver((entries) => {
                 if (entries[0].isIntersecting === true) {
                     this.activeIndex = index;
                 }
             }, { threshold: [0.5] });
 
-            const element = this._shadowRoot?.querySelector(link.scrollTo);
+            const element = this._shadowRoot?.querySelector(link.sectionSelector);
 
             if (element) {
                 observer.observe(element);
@@ -139,7 +142,7 @@ export class Navigation extends LitElement {
     }
 
     private _linkClicked = (link: ILink) => {
-        this._shadowRoot?.querySelector(link.scrollTo)?.scrollIntoView({ behavior: 'smooth' });
+        this._shadowRoot?.querySelector(link.sectionSelector)?.scrollIntoView({ behavior: 'smooth' });
     }
 
     render() {
@@ -149,7 +152,7 @@ export class Navigation extends LitElement {
                     <vpn-logo></vpn-logo>
 
                     <div class='links link-list'>
-                        ${this._links.map((link, index) => html`
+                        ${_links.map((link, index) => html`
                             <a href='#!' @click=${() => this._linkClicked(link)} class='${this.activeIndex === index ? 'active' : ''}'>
                             ${link.text}
                         </a>

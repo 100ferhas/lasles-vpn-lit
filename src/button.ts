@@ -1,3 +1,4 @@
+/* eslint-disable lit/no-classfield-shadowing */
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
